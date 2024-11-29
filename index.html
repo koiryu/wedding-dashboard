@@ -12,13 +12,14 @@
     <div id="dashboard" style="width: 100%; height: 800px;"></div>
 
     <script>
-        // JavaScript部分にPythonから生成されたPlotlyコードを追加します
+        // データの定義
         var total_guests = 64;
         var line_registration_rate = 84.375;
         var cashless_rate = 92.1875;
         var gender_counts = {'男': 44, '女': 20};
         var attribute_counts = {'新郎': 34, '新婦': 30};
 
+        // グラフのデータ
         var data = [
             {
                 type: "indicator",
@@ -66,7 +67,9 @@
                 y: ["男性", "女性"],
                 x: [gender_counts['男'], gender_counts['女']],
                 marker: { color: ["blue", "pink"] },
-                domain: { row: 1, column: 0 }
+                domain: { row: 1, column: 0 },
+                text: [gender_counts['男'], gender_counts['女']],
+                textposition: "inside"
             },
             {
                 type: "bar",
@@ -75,15 +78,20 @@
                 y: ["新郎", "新婦"],
                 x: [attribute_counts['新郎'], attribute_counts['新婦']],
                 marker: { color: ["green", "orange"] },
-                domain: { row: 1, column: 1 }
+                domain: { row: 1, column: 1 },
+                text: [attribute_counts['新郎'], attribute_counts['新婦']],
+                textposition: "inside"
             }
         ];
 
+        // レイアウト
         var layout = {
             grid: { rows: 2, columns: 3, pattern: "independent" },
+            barmode: "stack",
             title: "結婚式ダッシュボード"
         };
 
+        // 描画
         Plotly.newPlot("dashboard", data, layout);
     </script>
 </body>
