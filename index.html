@@ -3,96 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Dashboard</title>
-    <!-- Include Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>数字で見るWedding Party</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+        }
+        .card {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+        canvas {
+            margin: 0 auto;
+            display: block;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>結婚式ダッシュボード</h1>
-    <div id="dashboard" style="width: 100%; height: 800px;"></div>
-
+    <div class="dashboard">
+        <!-- 総人数 -->
+        <div class="card">
+            <h2>ゲスト数</h2>
+            <p style="font-size: 4rem;">64</p>
+        </div>
+        <!-- LINE登録率ゲージ -->
+        <div class="card">
+            <h2>LINE登録率</h2>
+            <canvas id="lineGauge" width="200" height="200"></canvas>
+        </div>
+        <!-- キャッシュレス決済率ゲージ -->
+        <div class="card">
+            <h2>キャッシュレス決済率</h2>
+            <canvas id="cashlessGauge" width="200" height="200"></canvas>
+        </div>
+        <!-- 男女比 -->
+        <div class="card">
+            <h2>男女比</h2>
+            <canvas id="genderChart" width="200" height="150"></canvas>
+        </div>
+        <!-- 新郎新婦比 -->
+        <div class="card">
+            <h2>新郎新婦ゲスト比</h2>
+            <canvas id="attributeChart" width="200" height="150"></canvas>
+        </div>
+    </div>
     <script>
-        // データの定義
-        var total_guests = 64;
-        var line_registration_rate = 84.375;
-        var cashless_rate = 92.1875;
-        var gender_counts = {'男': 44, '女': 20};
-        var attribute_counts = {'新郎': 34, '新婦': 30};
-
-        // グラフのデータ
-        var data = [
-            {
-                type: "indicator",
-                mode: "number",
-                value: total_guests,
-                title: { text: "総人数" },
-                domain: { row: 0, column: 0 }
-            },
-            {
-                type: "indicator",
-                mode: "gauge+number",
-                value: line_registration_rate,
-                title: { text: "LINE登録率" },
-                number: { suffix: "%" },
-                gauge: {
-                    axis: { range: [0, 100] },
-                    bar: { color: "lightgreen" },
-                    steps: [
-                        { range: [0, line_registration_rate], color: "lightgreen" },
-                        { range: [line_registration_rate, 100], color: "lightgrey" }
-                    ]
-                },
-                domain: { row: 0, column: 1 }
-            },
-            {
-                type: "indicator",
-                mode: "gauge+number",
-                value: cashless_rate,
-                title: { text: "キャッシュレス決済率" },
-                number: { suffix: "%" },
-                gauge: {
-                    axis: { range: [0, 100] },
-                    bar: { color: "lightblue" },
-                    steps: [
-                        { range: [0, cashless_rate], color: "lightblue" },
-                        { range: [cashless_rate, 100], color: "lightgrey" }
-                    ]
-                },
-                domain: { row: 0, column: 2 }
-            },
-            {
-                type: "bar",
-                orientation: "h",
-                name: "男女比",
-                y: ["男性", "女性"],
-                x: [gender_counts['男'], gender_counts['女']],
-                marker: { color: ["blue", "pink"] },
-                domain: { row: 1, column: 0 },
-                text: [gender_counts['男'], gender_counts['女']],
-                textposition: "inside"
-            },
-            {
-                type: "bar",
-                orientation: "h",
-                name: "新郎新婦比",
-                y: ["新郎", "新婦"],
-                x: [attribute_counts['新郎'], attribute_counts['新婦']],
-                marker: { color: ["green", "orange"] },
-                domain: { row: 1, column: 1 },
-                text: [attribute_counts['新郎'], attribute_counts['新婦']],
-                textposition: "inside"
+        // プラグインでゲージの中央に数値を表示
+        const gaugeTextPlugin = {
+            id: 'gaugeText',
+            beforeDraw(chart) {
+                const { width } = chart;
+                const { datasets } = chart.data;
+                const value = datasets[0].data[0];
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = '#000';
+                ctx.fillText(`${value.toFixed(1)}%`, width / 2, width / 2 + 40); 
             }
-        ];
-
-        // レイアウト
-        var layout = {
-            grid: { rows: 2, columns: 3, pattern: "independent" },
-            barmode: "stack",
-            title: "結婚式ダッシュボード"
         };
 
-        // 描画
-        Plotly.newPlot("dashboard", data, layout);
+        // LINE登録率ゲージ
+        const lineGaugeCtx = document.getElementById('lineGauge').getContext('2d');
+        new Chart(lineGaugeCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [84.375, 15.625],
+                    backgroundColor: ['lightgreen', 'lightgray'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                circumference: 180,
+                rotation: -90,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                cutout: '70%'
+            },
+            plugins: [gaugeTextPlugin]
+        });
+
+        // キャッシュレス決済率ゲージ
+        const cashlessGaugeCtx = document.getElementById('cashlessGauge').getContext('2d');
+        new Chart(cashlessGaugeCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [92.1875, 7.8125],
+                    backgroundColor: ['lightblue', 'lightgray'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                circumference: 180,
+                rotation: -90,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                cutout: '70%'
+            },
+            plugins: [gaugeTextPlugin]
+        });
+
+        const barChartTextPlugin = {
+            id: 'barChartText',
+            afterDatasetsDraw(chart) {
+                const { ctx, data } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const value = dataset.data[index];
+                        ctx.save();
+                        ctx.font = '18px Arial'; // フォントサイズとスタイル
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = '#fff'; // 白文字に設定（棒の上に置く場合は見やすいように）
+                        // 棒の中央に人数を表示
+                        const x = bar.x -30
+                        const y = bar.y + (chart.options.indexAxis === 'y' ? bar.height / 2 -30 : 0);
+                        ctx.fillText(value, x, y);
+                        ctx.restore();
+                    });
+                });
+            }
+        };
+
+
+        // 男女比グラフ
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+            type: 'bar',
+            data: {
+                labels: [' '],
+                datasets: [
+                    { label: '男性', data: [44], backgroundColor: 'blue' },
+                    { label: '女性', data: [20], backgroundColor: 'pink' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: true } },
+                responsive: true,
+                scales: {
+                    x: { stacked: true, max: 64 },
+                    y: { stacked: true }
+                }
+            },
+            plugins: [barChartTextPlugin]
+        });
+
+        // 新郎新婦比グラフ
+        const attributeCtx = document.getElementById('attributeChart').getContext('2d');
+        new Chart(attributeCtx, {
+            type: 'bar',
+            data: {
+                labels: [' '],
+                datasets: [
+                    { label: '新郎', data: [34], backgroundColor: 'green' },
+                    { label: '新婦', data: [30], backgroundColor: 'orange' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: true } },
+                responsive: true,
+                scales: {
+                    x: { stacked: true, max: 64 },
+                    y: { stacked: true }
+                }
+            },
+            plugins: [barChartTextPlugin]
+        });
     </script>
 </body>
 </html>
