@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Dashboard</title>
+    <!-- Include Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>結婚式ダッシュボード</h1>
+    <div id="dashboard" style="width: 100%; height: 800px;"></div>
+
+    <script>
+        // JavaScript部分にPythonから生成されたPlotlyコードを追加します
+        var total_guests = 64;
+        var line_registration_rate = 84.375;
+        var cashless_rate = 92.1875;
+        var gender_counts = {'男': 44, '女': 20};
+        var attribute_counts = {'新郎': 34, '新婦': 30};
+
+        var data = [
+            {
+                type: "indicator",
+                mode: "number",
+                value: total_guests,
+                title: { text: "総人数" },
+                domain: { row: 0, column: 0 }
+            },
+            {
+                type: "indicator",
+                mode: "gauge+number",
+                value: line_registration_rate,
+                title: { text: "LINE登録率" },
+                number: { suffix: "%" },
+                gauge: {
+                    axis: { range: [0, 100] },
+                    bar: { color: "lightgreen" },
+                    steps: [
+                        { range: [0, line_registration_rate], color: "lightgreen" },
+                        { range: [line_registration_rate, 100], color: "lightgrey" }
+                    ]
+                },
+                domain: { row: 0, column: 1 }
+            },
+            {
+                type: "indicator",
+                mode: "gauge+number",
+                value: cashless_rate,
+                title: { text: "キャッシュレス決済率" },
+                number: { suffix: "%" },
+                gauge: {
+                    axis: { range: [0, 100] },
+                    bar: { color: "lightblue" },
+                    steps: [
+                        { range: [0, cashless_rate], color: "lightblue" },
+                        { range: [cashless_rate, 100], color: "lightgrey" }
+                    ]
+                },
+                domain: { row: 0, column: 2 }
+            },
+            {
+                type: "bar",
+                orientation: "h",
+                name: "男女比",
+                y: ["男性", "女性"],
+                x: [gender_counts['男'], gender_counts['女']],
+                marker: { color: ["blue", "pink"] },
+                domain: { row: 1, column: 0 }
+            },
+            {
+                type: "bar",
+                orientation: "h",
+                name: "新郎新婦比",
+                y: ["新郎", "新婦"],
+                x: [attribute_counts['新郎'], attribute_counts['新婦']],
+                marker: { color: ["green", "orange"] },
+                domain: { row: 1, column: 1 }
+            }
+        ];
+
+        var layout = {
+            grid: { rows: 2, columns: 3, pattern: "independent" },
+            title: "結婚式ダッシュボード"
+        };
+
+        Plotly.newPlot("dashboard", data, layout);
+    </script>
+</body>
+</html>
